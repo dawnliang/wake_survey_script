@@ -1,7 +1,7 @@
 %{
-    FUNCTION R = CALCINTERPCOEFF(TRI)
+    FUNCTION R = CALCULATE_INTERPOLATION_COEFFICIENTS(TRI)
     
-    @filename   calcInterpCoeff.m
+    @filename   calculate_interpolation_coefficients.m
     @author     DL + NP
     @date       July 22, 2015
     @updated    August 1, 2015 -DL
@@ -47,7 +47,7 @@
               1 ]    1 x3 y3 ]  c3 ]
 %}
 
-function r = calcInterpCoeff(tri)
+function r = calculate_interpolation_coefficients(tri)
      A = [1 0 0;
          0 1 0;
          0 0 1];
