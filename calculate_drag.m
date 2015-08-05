@@ -1,5 +1,5 @@
 %{
-    @filename   wakeSurveyDrag.m
+    @filename   calculate_drag.m
     @author     DL + NP
     @date       July 22, 2015
     @updated    August 1, 2015 -DL
