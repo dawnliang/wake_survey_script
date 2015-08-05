@@ -180,7 +180,7 @@ U_a = (art_axial_v - U) .* (art_axial_v + U - 2 .* u_inf);
 func = p_diff + ro/2 .* U_a;
 clearvars U_a;
 
-D_p = calc2Integral(Y, Z, func);
+D_p = calculate_surface_integral(Y, Z, func);
 
 %{
     induced drag:
@@ -199,6 +199,6 @@ D_p = calc2Integral(Y, Z, func);
 pert_v = art_axial_v - u_inf;
 func = (ro ./ 2) .* (V.^2 + W.^2 - pert_v.^2);
 
-D_i = calc2Integral(Y, Z, func);
+D_i = calculate_surface_integral(Y, Z, func);
 
 clearvars -except TEST_NUM RUN_NUM D_p D_i;
