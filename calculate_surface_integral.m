@@ -1,5 +1,5 @@
 %{
-    FUNCTION R = CALC2INTEGRAL(X, Y, data)
+    FUNCTION R = CALCULATE_SURFACE_INTEGRAL(X, Y, data)
 
     @filename   calc2Integral.m
     @author     DL + NP
@@ -71,7 +71,7 @@
             / (b2 c1 - b1 c2))
 %}
 
-function r = calc2Integral(X, Y, data)
+function r = calculate_surface_integral(X, Y, data)
     % // TEST CODE - to test the function, uncomment the code below & replace
     % //             X/Y with x/y
     
