@@ -103,61 +103,66 @@ Y = gallery('uniformdata', [3600,1], 8); % TRAV_Y
 Z = gallery('uniformdata', [3600,1], 9); % TRAV_Z
 %}
 
-%% CALCULATE CONSTANTS & PERFORM UNIT CONVERSIONS
+    %% CALCULATE CONSTANTS & PERFORM UNIT CONVERSIONS
 
-%{
-        - p_diff = p_t_inf - p_t (psf)
-            - p_t: total pressure (local) (psi)
-            - p_t_inf: freestream total pressure (psf)
-        - ro: air density (slugs / ft^3)
-        - u_inf: freestream u-axis air pressure (psf)
-%}
+    %{
+            - p_diff = p_t_inf - p_t (psf)
+                - p_t: total pressure (local) (psi)
+                - p_t_inf: freestream total pressure (psf)
+            - ro: air density (slugs / ft^3)
+            - u_inf: freestream u-axis air pressure (psf)
+    %}
 
-RANKINE_CONST = 549.67;         % deg R = deg F + RANKINE CONST
-UNIVERSAL_GAS_CONSTANT = 1716;  % ft * lb / (slug * R)
-SQFT_TO_SQIN = 144;             % conversion constant
+    RANKINE_CONST = 549.67;         % deg R = deg F + RANKINE CONST
+    UNIVERSAL_GAS_CONSTANT = 1716;  % ft * lb / (slug * R)
+    SQFT_TO_SQIN = 144;             % conversion constant
 
-%{
-    p_diff = p_t_inf - p_t
-        - p_t_inf; freestream total pressure (QC + PRESSTS) (psf)
-        - p_t; local total pressure (PTP) (psf)
-%}
-p_t_inf = QC + PRESSTS ./ SQFT_TO_SQIN;
-p_diff = p_t_inf - Pt ./ SQFT_TO_SQIN;
+    %{
+        p = ro*R*T => ro = p / (R*T)
+            - p: pressure in lb/ft^2 (from PRESSTS)
+            - ro: density in slugs/ft^3
+            - R: universal gas constant = 1716 ft*lb/(slug*R)
+            - T: temperature in Rankine (F + 459.67) (from TEMPTS)
+    %}
+    ro = (PRESSTS * SQFT_TO_SQIN) ./ (UNIVERSAL_GAS_CONSTANT .* (TEMPTS + RANKINE_CONST));
 
-%{
-    p = ro*R*T => ro = p / (R*T)
-        - p: pressure in lb/ft^2 (from PRESSTS)
-        - ro: density in slugs/ft^3
-        - R: universal gas constant = 1716 ft*lb/(slug*R)
-        - T: temperature in Rankine (F + 459.67) (from TEMPTS)
-%}
-ro = (PRESSTS ./ SQFT_TO_SQIN) ./ (UNIVERSAL_GAS_CONSTANT .* (TEMPTS + RANKINE_CONST));
+    %{
+        p_diff = p_t_inf - p_t = Qa (1- Cp
+            - p_t_inf; freestream total pressure (Qa) (psf)
+            - p_t; local total pressure (Cp * Qa) (psf)
+    %}
+    p_diff = QA .* (1 - Cp);
+    
+    for i = 1:length(p_diff)
+        if p_diff(i) < 0
+            p_diff(i) = 0;
+        end
+    end
 
-%{
-    q = 1/2 * ro*v^2 => v = sqrt(2*q/ro) = u_inf
-        - q: dynamic pressure (QC)
-        - ro: density
-        - v: velocity of wind
-%}
-u_inf = sqrt(2 .* QC ./ ro);
+    %{
+        q = 1/2 * ro*v^2 => v = sqrt(2*q/ro) = u_inf
+            - q: dynamic pressure (Qa)
+            - ro: density
+            - v: velocity of wind
+    %}
+    u_inf = sqrt(2 .* QA ./ ro);
 
-%{
-    total pressure data is given in pressure coefficients; multiply by Q &
-    conver to velocity
-%}
-Pt = sqrt(2 .* Pt .* QC ./ ro);
+    %{
+        total pressure data is given in pressure coefficients; multiply by Q &
+        convert to velocity
+    %}
+    P = sqrt(2 .* Cp .* QA ./ ro);
 
-%{
-    pressure data given in pressure/upflow/xflow; convert to uvw
-        U = p * cos(alpha) * sin(beta)
-        V = p * cos(alpha) * cos(beta)
-        W = p * sin(alpha)
-            where alpha = upflow, beta = xflow
-%}
-U = P .* cos(ALPHA) .* sin(BETA);
-V = P .* cos(ALPHA) .* cos(BETA);
-W = P .* sin(ALPHA);
+    %{
+        pressure data given in pressure/upflow/xflow; convert to uvw
+            U = p * cos(alpha) * sin(beta)
+            V = p * cos(alpha) * cos(beta)
+            W = p * sin(alpha)
+                where alpha = upflow, beta = xflow
+    %}
+    U = P .* cosd(ALPHA) .* cosd(BETA);
+    V = -P .* cosd(ALPHA) .* sind(BETA);
+    W = P .* sind(ALPHA);
 
 clearvars -except TEST_NUM RUN_NUM TP U V W Y Z ro p_diff u_inf;
 
